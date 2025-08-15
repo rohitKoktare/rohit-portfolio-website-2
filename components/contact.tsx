@@ -13,9 +13,20 @@ import { Button } from "@/components/ui/button"
 import { Mail, Phone, MapPin, Send } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
+// TO-DO 
+// Steps to make a contact us form sent to email to user and customer both 
+// first get a email and its key from the google 
+// then add it in the env files 
+// create an express server 
+// make a function to send the data to and also create a route
+
+
+
 const Contact = () => {
   const { toast } = useToast()
   const controls = useAnimation()
+  const [submitMessage, setSubmitMessage] = useState("")
+
   const [ref, inView] = useInView({
     threshold: 0.1,
     triggerOnce: true,
@@ -62,16 +73,55 @@ const Contact = () => {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
+    const formData = new FormData(e.currentTarget)
+    const data = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      subject: formData.get("subject"),
+      message: formData.get("message"),
+    }
+console.log(data, "form data")
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+    if (response.ok) {
+      toast({
+        title: "Message sent! 🚀",
+        description: "Thank you for your message. I'll get back to you soon.",
+      })
+      setFormData({ name: "", email: "", subject: "", message: "" })
+    } else {
+      toast({
+        title: "Error sending message",
+        description: "Please try again later.",
+        variant: "destructive",
+      })
+    }
+      // if (response.ok) {
+      //   setSubmitMessage("Thank you! Your message has been sent successfully.")
+      //   e.currentTarget.reset()
+      // } else {
+      //   setSubmitMessage("Sorry, there was an error sending your message. Please try again.")
+      // }
+    } catch (error) {
+      setSubmitMessage("Sorry, there was an error sending your message. Please try again.")
+    }
+
 
     // Simulate form submission
     setTimeout(() => {
-      toast({
-        title: "Message sent!",
-        description: "Thank you for your message. I'll get back to you soon.",
-      })
+      // toast({
+      //   title: "Message sent!",
+      //   description: "Thank you for your message. I'll get back to you soon.",
+      // })
       setFormData({
         name: "",
         email: "",
